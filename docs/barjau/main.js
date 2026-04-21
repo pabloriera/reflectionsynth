@@ -28,15 +28,15 @@ const CONTROL_GROUPS = [
         id: 'sigma',
         label: 'σ',
         min: 0.01,
-        max: 30,
+        max: 15,
         step: 0.01,
         format: (v) => v.toFixed(2),
       },
       {
         id: 'beta',
         label: 'β',
-        min: -30,
-        max: 30,
+        min: 0,
+        max: 15,
         step: 0.1,
         format: (v) => v.toFixed(1),
       },
@@ -212,8 +212,8 @@ function updateUi() {
   elements.currentFnlValue.textContent = runtime.latestFnl.toFixed(4);
   elements.statusText.textContent = state.active ? 'Audio running' : 'Audio idle';
   elements.statusSubtext.textContent = state.active
-    ? 'Realtime explicit-Euler DDE running in the worklet.'
-    : 'Press Start Audio to begin.';
+    ? 'Realtime explicit-Euler DDE.'
+    : 'Press Start Audio to begin (space-bar).';
   elements.waveformMeta.textContent =
     `RMS ${runtime.latestRms.toFixed(4)} · p = ${runtime.latestP.toFixed(4)}`;
   elements.phaseMeta.textContent =
@@ -464,7 +464,7 @@ function drawReflection() {
   // Render the causal exponential: r(t) = -beta * exp(-sigma*(t-T)) for t >= T
   // Fixed axes: y always covers full beta range, x always shows 3×T window
   const displayEnd = T * 3;
-  const yRange = [-31, 1];
+  const yRange = [-20, 1];
   const steps = 512;
   const points = [];
 

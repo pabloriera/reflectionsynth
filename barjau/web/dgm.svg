@@ -1,0 +1,48 @@
+<svg width="900" height="260" viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#000"></path>
+    </marker>
+  </defs>
+
+  <style>
+    .line { stroke:#000; stroke-width:2.2; fill:none; }
+    .thin { stroke:#000; stroke-width:1.6; fill:none; }
+    .txt { font-family: "Times New Roman", Times, serif; font-size: 24px; fill:#000; }
+    .small { font-family: "Times New Roman", Times, serif; font-size: 20px; fill:#000; }
+  </style>
+
+  <!-- Input label -->
+  <text x="24" y="68" class="small">P₀ = blowing pressure</text>
+
+  <!-- Input arrow -->
+  <line x1="20" y1="92" x2="190" y2="92" class="line" marker-end="url(#arrow)"></line>
+
+  <!-- Summing / nonlinear element -->
+  <circle cx="220" cy="92" r="28" class="line"></circle>
+  <line x1="202" y1="74" x2="238" y2="110" class="thin"></line>
+  <line x1="238" y1="74" x2="202" y2="110" class="thin"></line>
+
+  <!-- Bore input/output -->
+  <line x1="248" y1="92" x2="390" y2="92" class="line" marker-end="url(#arrow)"></line>
+  <text x="305" y="42" class="small">u(t) =</text>
+  <text x="305" y="67" class="small">acoustic</text>
+  <text x="305" y="92" class="small">flow</text>
+
+  <!-- Bore block -->
+  <rect x="390" y="55" width="220" height="74" class="line"></rect>
+  <text x="500" y="100" text-anchor="middle" class="txt">Bore</text>
+
+  <!-- Output line -->
+  <line x1="610" y1="92" x2="820" y2="92" class="line" marker-end="url(#arrow)"></line>
+  <text x="635" y="74" class="small">p(t) = acoustic pressure</text>
+
+  <!-- Excitatory device label -->
+  <text x="24" y="154" class="small">Excitatory device</text>
+  <line x1="128" y1="142" x2="198" y2="106" class="thin" marker-end="url(#arrow)"></line>
+
+  <!-- Feedback loop -->
+  <line x1="690" y1="92" x2="690" y2="195" class="line"></line>
+  <line x1="690" y1="195" x2="220" y2="195" class="line"></line>
+  <line x1="220" y1="195" x2="220" y2="121" class="line" marker-end="url(#arrow)"></line>
+</svg>

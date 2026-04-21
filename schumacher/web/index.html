@@ -83,7 +83,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-width: 620px;
+    max-width: 1020px;
   }
 
   .diagram-card {
@@ -393,16 +393,24 @@
       <div class="title-block">
         <div class="title-content">
           <div class="description-block">
-            <div class="eyebrow"></div>
+            <!-- <div class="eyebrow"></div> -->
             <h1><a href="schumacher1983.pdf" target="_blank" rel="noreferrer">Mcintyre, Schumaher, Woodhouse 1983 (PDF)</a></h1>
             <div class="intro">
               <p class="intro-heading">Model definition</p>
               <p>Nonlinear Volterra formulation with convolution kernel $r(t)$, state $q(t)$, scalar coupling $Z$, and nonlinear map $F$.</p>
               <p>$$q(t) = (r * (q + ZF(q)))(t) + ZF(q(t)).$$</p>
+              <p>Nonlinear transfer function with smooth cutoff at $q_c$:</p>
+              <p>$$F(q) = k\,(p - q)\,(q - q_c)$$</p>
             </div>
           </div>
           <div class="diagram-card">
-            <img src="./dgm.svg" alt="Model block diagram">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <img src="./dgm.svg" alt="Model block diagram">
+              <div class="intro">
+                <p class="intro-heading">Reflection kernel</p>
+                <p>$$r(t) = -e^{-\frac{1}{2}\left(\frac{t-T_1}{\sigma_1}\right)^{\!2}} + A_2\,e^{-\frac{1}{2}\left(\frac{t-T_2}{\sigma_2}\right)^{\!2}}$$</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

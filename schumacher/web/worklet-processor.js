@@ -18,7 +18,6 @@ class ReflectonNotebookProcessor extends AudioWorkletProcessor {
       qc: -0.1,
       smoothness: 30.0,
       newtonIters: 10,
-      outputGain: 0.75,
       active: false,
     };
 
@@ -40,6 +39,11 @@ class ReflectonNotebookProcessor extends AudioWorkletProcessor {
     this.latestHist = 0;
     this.dcX = 0;
     this.dcY = 0;
+
+    // Instability detection: ring buffer of last 3 |q| values
+    this.absQ = new Float64Array(3);
+    this.absQIdx = 0;
+    this.INSTABILITY_THRESHOLD = 1e6;
 
     this.rebuildKernel();
 
@@ -68,6 +72,8 @@ class ReflectonNotebookProcessor extends AudioWorkletProcessor {
     this.latestHist = 0;
     this.dcX = 0;
     this.dcY = 0;
+    this.absQ.fill(0);
+    this.absQIdx = 0;
     this.reportState();
   }
 
@@ -112,6 +118,17 @@ class ReflectonNotebookProcessor extends AudioWorkletProcessor {
       (p - q) * smoothStep +
       (p - q) * (q - qc) * dsmoothStep
     );
+  }
+
+  checkInstability(qAbs) {
+    this.absQ[this.absQIdx % 3] = qAbs;
+    this.absQIdx += 1;
+    if (this.absQIdx < 3) return false;
+    const a = this.absQ[(this.absQIdx - 3) % 3];
+    const b = this.absQ[(this.absQIdx - 2) % 3];
+    const c = this.absQ[(this.absQIdx - 1) % 3];
+    const avgIncrease = (Math.max(0, b - a) + Math.max(0, c - b)) / 2;
+    return avgIncrease > this.INSTABILITY_THRESHOLD;
   }
 
   dcBlock(sample) {
@@ -218,8 +235,15 @@ class ReflectonNotebookProcessor extends AudioWorkletProcessor {
       this.latestF = Number.isFinite(f) ? f : 0;
       this.latestHist = Number.isFinite(hist) ? hist : 0;
 
-      const heard = Math.tanh(this.params.outputGain * this.dcBlock(this.latestQ));
-      channel[sampleIndex] = Number.isFinite(heard) ? heard : 0;
+      if (this.checkInstability(Math.abs(this.latestQ))) {
+        this.params.active = false;
+        channel[sampleIndex] = 0;
+        this.resetState();
+        this.port.postMessage({ type: 'unstable' });
+        break;
+      }
+
+      channel[sampleIndex] = Number.isFinite(this.latestQ) ? this.latestQ : 0;
       this.pushScopeSample(this.latestQ);
     }
 

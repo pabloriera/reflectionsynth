@@ -11,7 +11,6 @@ const DEFAULTS = {
   qc: -0.1,
   smoothness: 30.0,
   newtonIters: 10,
-  outputGain: 0.75,
   active: false,
 };
 
@@ -21,7 +20,7 @@ const CONTROL_GROUPS = [
     controls: [
       {
         id: 'T',
-        label: 'T',
+        label: 'T₁',
         min: 0.25,
         max: 30,
         step: 0.01,
@@ -29,7 +28,7 @@ const CONTROL_GROUPS = [
       },
       {
         id: 'sigma',
-        label: 'sigma',
+        label: 'σ₁',
         min: 0.01,
         max: 4,
         step: 0.01,
@@ -37,7 +36,7 @@ const CONTROL_GROUPS = [
       },
       {
         id: 'secondAmplitude',
-        label: 'amp2',
+        label: 'A₂',
         min: -1,
         max: 1,
         step: 0.01,
@@ -45,7 +44,7 @@ const CONTROL_GROUPS = [
       },
       {
         id: 'secondT',
-        label: 'T2',
+        label: 'T₂',
         min: 0,
         max: 30,
         step: 0.01,
@@ -53,7 +52,7 @@ const CONTROL_GROUPS = [
       },
       {
         id: 'secondSigma',
-        label: 'sig2',
+        label: 'σ₂',
         min: 0.01,
         max: 4,
         step: 0.01,
@@ -78,7 +77,7 @@ const CONTROL_GROUPS = [
     ],
   },
   {
-    title: 'F(q)',
+    title: 'Nonlinear transfer function F(q)',
     controls: [
       {
         id: 'k',
@@ -100,27 +99,6 @@ const CONTROL_GROUPS = [
         id: 'qc',
         label: 'qc',
         min: -2,
-        max: 2,
-        step: 0.01,
-        format: (value) => value.toFixed(2),
-      },
-    ],
-  },
-  {
-    title: 'Solver',
-    controls: [
-      {
-        id: 'newtonIters',
-        label: 'Newton',
-        min: 1,
-        max: 30,
-        step: 1,
-        format: (value) => `${Math.round(value)}`,
-      },
-      {
-        id: 'outputGain',
-        label: 'Gain',
-        min: 0.01,
         max: 2,
         step: 0.01,
         format: (value) => value.toFixed(2),
@@ -304,6 +282,13 @@ async function ensureAudio() {
   runtime.node.connect(runtime.audioContext.destination);
   runtime.node.port.onmessage = (event) => {
     const message = event.data;
+    if (message.type === 'unstable') {
+      state.active = false;
+      elements.statusText.textContent = 'Unstable — stopped';
+      elements.statusSubtext.textContent = 'Simulation diverged. Adjust parameters and press Start Audio.';
+      elements.toggleAudio.textContent = 'Start Audio';
+      return;
+    }
     if (message.type !== 'state') {
       return;
     }
@@ -401,22 +386,36 @@ function drawSeries(context, points, width, height, padding, xRange, yRange, col
   context.stroke();
 }
 
+function findTrigger(samples) {
+  const limit = Math.floor(samples.length / 2);
+  for (let i = 1; i < limit; i += 1) {
+    if (samples[i - 1] <= 0 && samples[i] > 0) {
+      return i;
+    }
+  }
+  return 0;
+}
+
 function drawWaveform() {
   const { context, width, height } = getContext2d(elements.waveformCanvas);
   const padding = { left: 40, right: 18, top: 18, bottom: 28 };
   const samples = runtime.latestScope;
-  let amplitude = 0.02;
 
-  for (let index = 0; index < samples.length; index += 1) {
-    amplitude = Math.max(amplitude, Math.abs(samples[index]));
+  const triggerIdx = findTrigger(samples);
+  const windowLen = Math.floor(samples.length / 2);
+
+  let amplitude = 0.02;
+  for (let i = triggerIdx; i < triggerIdx + windowLen; i += 1) {
+    amplitude = Math.max(amplitude, Math.abs(samples[i]));
   }
 
-  const xMaxMs = (samples.length / (runtime.audioContext?.sampleRate ?? runtime.sampleRate)) * 1000;
+  const sr = runtime.audioContext?.sampleRate ?? runtime.sampleRate;
+  const xMaxMs = (windowLen / sr) * 1000;
   const yRange = [-amplitude * 1.1, amplitude * 1.1];
-  const points = Array.from(samples, (value, index) => [
-    (index / Math.max(1, samples.length - 1)) * xMaxMs,
-    value,
-  ]);
+  const points = [];
+  for (let i = 0; i < windowLen; i += 1) {
+    points.push([(i / Math.max(1, windowLen - 1)) * xMaxMs, samples[triggerIdx + i]]);
+  }
 
   context.clearRect(0, 0, width, height);
   drawGrid(context, width, height, padding, 6, 4);
@@ -425,6 +424,7 @@ function drawWaveform() {
 
   const zeroY = height - padding.bottom - ((0 - yRange[0]) / (yRange[1] - yRange[0] || 1)) * (height - padding.top - padding.bottom);
   context.strokeStyle = 'rgba(191, 75, 34, 0.22)';
+  context.lineWidth = 1;
   context.beginPath();
   context.moveTo(padding.left, zeroY);
   context.lineTo(width - padding.right, zeroY);

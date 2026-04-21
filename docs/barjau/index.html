@@ -61,11 +61,39 @@
     padding: 14px 16px;
   }
 
+  .title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .title-content {
+    display: grid;
+    grid-template-columns: minmax(360px, 620px) 380px;
+    gap: 18px;
+    align-items: start;
+    justify-content: start;
+  }
+
   .description-block {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-width: 720px;
+    max-width: 620px;
+  }
+
+  .diagram-card {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 200px;
+  }
+
+  .diagram-card img {
+    display: block;
+    width: 500px;
+    height: auto;
+    max-height: 260px;
   }
 
   .eyebrow {
@@ -317,18 +345,24 @@
 <body>
   <div class="shell">
     <header class="topbar panel">
-      <div class="description-block">
-        <div class="eyebrow">Delay-differential equation · Reed instrument model</div>
-        <h1><a href="barjau1997.pdf" target="_blank" rel="noreferrer">Barjau, Agulló &amp; Cardona 1997 (PDF)</a></h1>
-        <div class="intro">
-          <p class="intro-heading">Model definition</p>
-          <p>
-            Two coupled DDEs for pressure $p(t)$ and reed velocity $u(t)$
-            with discrete delay $T$ and polynomial nonlinearity $f_{nl}$.
-          </p>
-          <p>$$\frac{du}{dt} = \frac{f_{nl}(p) - u}{\tau}$$</p>
-          <p>$$\frac{dp}{dt} = \frac{Z_0}{S}\!\left[\frac{f_{nl}(p)-u}{\tau} + \sigma\, u(t) - \beta\, u(t-T)\right] - \sigma\, p(t) - \beta\, p(t-T)$$</p>
-          <p>$$f_{nl}(p) = \alpha\,(P_0 - p)\,(p - p_f)$$</p>
+      <div class="title-block">
+        <div class="title-content">
+          <div class="description-block">
+            <h1><a href="barjau1997.pdf" target="_blank" rel="noreferrer">Barjau, Agulló &amp; Cardona 1997 (PDF)</a></h1>
+            <div class="intro">
+              <p class="intro-heading">Model definition</p>
+              <p>
+                Two coupled DDEs for pressure $p(t)$ and reed velocity $u(t)$
+                with discrete delay $T$ and polynomial nonlinearity $f_{nl}$.
+              </p>
+              <p>$$\frac{du}{dt} = \frac{f_{nl}(p) - u}{\tau}$$</p>
+              <p>$$\frac{dp}{dt} = \frac{Z_0}{S}\!\left[\frac{f_{nl}(p)-u}{\tau} + \sigma\, u(t) - \beta\, u(t-T)\right] - \sigma\, p(t) - \beta\, p(t-T)$$</p>
+              <p>$$f_{nl}(p) = \alpha\,(P_0 - p)\,(p - p_f)$$</p>
+            </div>
+          </div>
+          <div class="diagram-card">
+            <img src="./dgm.svg" alt="Model block diagram">
+          </div>
         </div>
       </div>
 
