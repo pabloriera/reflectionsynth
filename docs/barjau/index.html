@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflecton — Woodwind Synthesizer</title>
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --panel: #161625;
+    --border: #2a2a40;
+    --text: #c8c8d8;
+    --accent: #00d4ff;
+    --accent2: #ff6b9d;
+    --slider-track: #2a2a40;
+    --slider-thumb: #00d4ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px;
+  }
+  header h1 { font-size: 18px; color: var(--accent); font-weight: 400; }
+  header .subtitle { color: #666; font-size: 11px; }
+  #startBtn {
+    margin-left: auto;
+    padding: 8px 24px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  #startBtn:hover { background: #33e0ff; }
+  #startBtn.active { background: var(--accent2); }
+
+  .main { display: flex; gap: 0; }
+  .controls {
+    width: 320px;
+    min-width: 320px;
+    padding: 16px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    max-height: calc(100vh - 56px);
+  }
+  .canvas-area {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .group {
+    margin-bottom: 16px;
+  }
+  .group-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #666;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    gap: 8px;
+  }
+  .slider-row label {
+    width: 110px;
+    font-size: 11px;
+    color: #999;
+    flex-shrink: 0;
+  }
+  .slider-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--slider-track);
+    border-radius: 2px;
+    outline: none;
+  }
+  .slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--slider-thumb);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .slider-row .val {
+    width: 58px;
+    text-align: right;
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+
+  .canvas-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .canvas-panel .panel-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .canvas-panel .panel-title {
+    font-size: 12px; color: #999;
+  }
+  .canvas-panel canvas {
+    width: 100%;
+    flex: 1;
+    border-radius: 4px;
+    cursor: crosshair;
+  }
+  .preset-btns {
+    display: flex; gap: 4px; margin-left: auto;
+  }
+  .preset-btns button {
+    background: var(--border);
+    color: var(--text);
+    border: none;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .preset-btns button:hover { background: #444; }
+
+  /* Waveform display */
+  #waveform {
+    height: 80px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Reflecton</h1>
+  <span class="subtitle">Woodwind DDE Synthesizer — Barjau et al. 1997</span>
+  <button id="startBtn">▶ Start</button>
+</header>
+
+<div class="main">
+  <div class="controls">
+    <!-- Excitation -->
+    <div class="group">
+      <div class="group-title">Excitation</div>
+      <div class="slider-row">
+        <label>Blowing P₀</label>
+        <input type="range" id="blowingPressure" min="0" max="10000" step="10" value="3500">
+        <span class="val" id="blowingPressure_v">3500 Pa</span>
+      </div>
+      <div class="slider-row">
+        <label>Reed α</label>
+        <input type="range" id="alpha" min="-12" max="-7" step="0.1" value="-10">
+        <span class="val" id="alpha_v">1e-10</span>
+      </div>
+      <div class="slider-row">
+        <label>Closing pf</label>
+        <input type="range" id="pf" min="-3000" max="0" step="10" value="-1000">
+        <span class="val" id="pf_v">-1000 Pa</span>
+      </div>
+      <div class="slider-row">
+        <label>Noise</label>
+        <input type="range" id="noiseAmount" min="0" max="0.1" step="0.001" value="0.01">
+        <span class="val" id="noiseAmount_v">0.010</span>
+      </div>
+    </div>
+
+    <!-- Bore -->
+    <div class="group">
+      <div class="group-title">Bore Geometry</div>
+      <div class="slider-row">
+        <label>Geometry</label>
+        <select id="geometry">
+          <option value="cylinder">Cylinder</option>
+          <option value="cone">Cone</option>
+        </select>
+      </div>
+      <div class="slider-row">
+        <label>Length</label>
+        <input type="range" id="tubeLength" min="0.1" max="3.0" step="0.01" value="0.60">
+        <span class="val" id="tubeLength_v">0.60 m</span>
+      </div>
+      <div class="slider-row">
+        <label>Diameter</label>
+        <input type="range" id="tubeDiameter" min="0.005" max="0.05" step="0.001" value="0.015">
+        <span class="val" id="tubeDiameter_v">15.0 mm</span>
+      </div>
+      <div class="slider-row" id="coneRow" style="display:none">
+        <label>End diameter</label>
+        <input type="range" id="coneEndDiameter" min="0.01" max="0.2" step="0.001" value="0.06">
+        <span class="val" id="coneEndDiameter_v">60 mm</span>
+      </div>
+    </div>
+
+    <!-- Losses -->
+    <div class="group">
+      <div class="group-title">Losses / Reflection</div>
+      <div class="slider-row">
+        <label>σ (damping)</label>
+        <input type="range" id="sigma" min="10" max="500" step="1" value="70">
+        <span class="val" id="sigma_v">70 s⁻¹</span>
+      </div>
+      <div class="slider-row">
+        <label>β (reflection)</label>
+        <input type="range" id="beta" min="10" max="200" step="1" value="55">
+        <span class="val" id="beta_v">55 s⁻¹</span>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="group">
+      <div class="group-title">Info</div>
+      <div id="infoDisplay" style="font-size:11px;color:#666;line-height:1.6">
+        Freq: — Hz<br>
+        Delay: — samples<br>
+        Zc: — Pa·s/m³
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-area">
+    <!-- Waveform -->
+    <canvas id="waveform" width="800" height="80"></canvas>
+
+    <!-- Reflection Function -->
+    <div class="canvas-panel">
+      <div class="panel-head">
+        <span class="panel-title">Reflection Function h(t)</span>
+        <div class="preset-btns">
+          <button onclick="reflCanvas.preset('exponential')">Exponential</button>
+          <button onclick="reflCanvas.preset('gaussian')">Gaussian</button>
+          <button onclick="reflCanvas.preset('flat')">Flat</button>
+          <button onclick="clearReflection()">Reset (use model)</button>
+        </div>
+      </div>
+      <canvas id="reflectionCanvas" width="800" height="160"></canvas>
+    </div>
+
+    <!-- Bore Profile -->
+    <div class="canvas-panel">
+      <div class="panel-head">
+        <span class="panel-title">Bore Profile (radius)</span>
+        <div class="preset-btns">
+          <button onclick="boreCanvas.preset('cylinder')">Cylinder</button>
+          <button onclick="boreCanvas.preset('cone')">Cone</button>
+          <button onclick="boreCanvas.preset('flare')">Flare</button>
+          <button onclick="clearBore()">Reset (use model)</button>
+        </div>
+      </div>
+      <canvas id="boreCanvas" width="800" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { DrawableCanvas } from './drawable-canvas.js';
+
+let audioCtx = null;
+let workletNode = null;
+let analyser = null;
+let isActive = false;
+
+// Expose canvases globally for preset buttons
+const reflCanvasEl = document.getElementById('reflectionCanvas');
+const boreCanvasEl = document.getElementById('boreCanvas');
+
+window.reflCanvas = new DrawableCanvas(reflCanvasEl, {
+  resolution: 256,
+  label: 'h(t) — draw to customize reflection',
+  minY: -1,
+  maxY: 1,
+  initial: null,
+  onChange: (data) => {
+    if (workletNode) {
+      workletNode.port.postMessage({ type: 'customReflection', value: Array.from(data) });
+    }
+  },
+});
+// Start with exponential preset
+window.reflCanvas.preset('exponential');
+
+window.boreCanvas = new DrawableCanvas(boreCanvasEl, {
+  resolution: 256,
+  label: 'Bore radius — draw to customize geometry',
+  minY: 0.002,
+  maxY: 0.03,
+  onChange: (data) => {
+    if (workletNode) {
+      workletNode.port.postMessage({ type: 'boreProfile', value: Array.from(data) });
+    }
+  },
+});
+window.boreCanvas.preset('cylinder');
+
+window.clearReflection = () => {
+  if (workletNode) {
+    workletNode.port.postMessage({ type: 'customReflection', value: null });
+  }
+  window.reflCanvas.preset('flat');
+};
+
+window.clearBore = () => {
+  if (workletNode) {
+    workletNode.port.postMessage({ type: 'boreProfile', value: null });
+  }
+  window.boreCanvas.preset('cylinder');
+};
+
+// Slider definitions
+const sliders = [
+  { id: 'blowingPressure', fmt: v => `${v} Pa` },
+  { id: 'alpha', fmt: v => `1e${v}`, transform: v => Math.pow(10, parseFloat(v)) },
+  { id: 'pf', fmt: v => `${v} Pa` },
+  { id: 'noiseAmount', fmt: v => parseFloat(v).toFixed(3) },
+  { id: 'tubeLength', fmt: v => `${parseFloat(v).toFixed(2)} m` },
+  { id: 'tubeDiameter', fmt: v => `${(parseFloat(v)*1000).toFixed(1)} mm` },
+  { id: 'coneEndDiameter', fmt: v => `${(parseFloat(v)*1000).toFixed(0)} mm` },
+  { id: 'sigma', fmt: v => `${v} s⁻¹` },
+  { id: 'beta', fmt: v => `${v} s⁻¹` },
+];
+
+function getParams() {
+  const p = {};
+  for (const s of sliders) {
+    const el = document.getElementById(s.id);
+    if (!el) continue;
+    p[s.id] = s.transform ? s.transform(el.value) : parseFloat(el.value);
+  }
+  p.geometry = document.getElementById('geometry').value;
+  p.active = isActive;
+  return p;
+}
+
+function updateDisplays() {
+  for (const s of sliders) {
+    const el = document.getElementById(s.id);
+    const vEl = document.getElementById(s.id + '_v');
+    if (el && vEl) vEl.textContent = s.fmt(el.value);
+  }
+  // Info
+  const p = getParams();
+  const freq = 343 / (2 * p.tubeLength);
+  const delaySamples = audioCtx ? (2 * p.tubeLength / 343 * audioCtx.sampleRate).toFixed(1) : '—';
+  const S = Math.PI * (p.tubeDiameter / 2) ** 2;
+  const Zc = (1.2 * 343 / S).toFixed(0);
+  document.getElementById('infoDisplay').innerHTML =
+    `Freq: ${freq.toFixed(1)} Hz<br>Delay: ${delaySamples} samples<br>Zc: ${Zc} Pa·s/m³`;
+}
+
+function sendParams() {
+  if (workletNode) {
+    workletNode.port.postMessage({ type: 'params', value: getParams() });
+  }
+  updateDisplays();
+}
+
+// Bind sliders
+for (const s of sliders) {
+  const el = document.getElementById(s.id);
+  if (el) el.addEventListener('input', sendParams);
+}
+document.getElementById('geometry').addEventListener('change', () => {
+  document.getElementById('coneRow').style.display =
+    document.getElementById('geometry').value === 'cone' ? 'flex' : 'none';
+  sendParams();
+});
+
+// Start/stop
+document.getElementById('startBtn').addEventListener('click', async () => {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+    await audioCtx.audioWorklet.addModule('worklet-processor.js');
+    workletNode = new AudioWorkletNode(audioCtx, 'woodwind-processor', {
+      outputChannelCount: [1],
+    });
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    workletNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    drawWaveform();
+  }
+
+  isActive = !isActive;
+  const btn = document.getElementById('startBtn');
+  btn.textContent = isActive ? '■ Stop' : '▶ Start';
+  btn.classList.toggle('active', isActive);
+
+  if (isActive) {
+    audioCtx.resume();
+    workletNode.port.postMessage({ type: 'reset' });
+  }
+  sendParams();
+});
+
+// Waveform display
+function drawWaveform() {
+  const canvas = document.getElementById('waveform');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  const buf = new Float32Array(analyser.fftSize);
+
+  function frame() {
+    requestAnimationFrame(frame);
+    analyser.getFloatTimeDomainData(buf);
+
+    ctx.fillStyle = '#161625';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    const step = buf.length / w;
+    for (let i = 0; i < w; i++) {
+      const idx = Math.floor(i * step);
+      const y = (0.5 - buf[idx] * 0.5) * h;
+      if (i === 0) ctx.moveTo(i, y);
+      else ctx.lineTo(i, y);
+    }
+    ctx.stroke();
+
+    // Center line
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    ctx.lineTo(w, h / 2);
+    ctx.stroke();
+  }
+  frame();
+}
+
+updateDisplays();
+</script>
+</body>
+</html>

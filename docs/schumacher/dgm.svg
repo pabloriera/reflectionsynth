@@ -1,0 +1,38 @@
+<svg width="980" height="360" viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="black"/>
+    </marker>
+  </defs>
+
+  <!-- Energy source (dashed circle) -->
+  <circle cx="80" cy="130" r="45" stroke="black" stroke-dasharray="5,5" fill="none"/>
+  <text x="80" y="119" text-anchor="middle" font-size="19">energy</text>
+  <text x="80" y="146" text-anchor="middle" font-size="19">source</text>
+
+  <!-- Arrow to nonlinear block -->
+  <line x1="125" y1="130" x2="180" y2="130" stroke="black" marker-end="url(#arrow)"/>
+
+  <!-- Nonlinear block -->
+  <rect x="180" y="100" width="180" height="60" stroke="black" fill="none"/>
+  <text x="270" y="129" text-anchor="middle" font-size="21">nonlinear element</text>
+
+  <!-- Arrow to linear block -->
+  <line x1="360" y1="130" x2="420" y2="130" stroke="black" marker-end="url(#arrow)"/>
+  <text x="390" y="113" text-anchor="middle" font-size="19">f(t)</text>
+
+  <!-- Linear block -->
+  <rect x="420" y="100" width="180" height="60" stroke="black" fill="none"/>
+  <text x="510" y="127" text-anchor="middle" font-size="21">linear element</text>
+  <text x="510" y="154" text-anchor="middle" font-size="18">(passive)</text>
+
+  <!-- Feedback loop -->
+  <path d="M600 130 L650 130 L650 60 L200 60 L200 100" 
+        fill="none" stroke="black" marker-end="url(#arrow)"/>
+
+  <!-- Label on feedback -->
+  <text x="420" y="47" text-anchor="middle" font-size="19">q(t)</text>
+
+</svg>
