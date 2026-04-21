@@ -470,7 +470,7 @@ function drawReflection() {
 
   for (let i = 0; i < steps; i += 1) {
     const t = (displayEnd * i) / (steps - 1);
-    const r = t >= T ? beta * Math.exp(-sigma * (t - T)) : 0;
+    const r = t >= T ? -beta * Math.exp(-sigma * (t - T)) : 0;
     points.push([t, r]);
     minR = Math.min(minR, r);
     maxR = Math.max(maxR, r);
@@ -485,8 +485,21 @@ function drawReflection() {
   drawAxesLabels(context, width, height, padding, 'ms', 'r');
   drawSeries(context, points, width, height, padding, [0, displayEnd || 1], yRange, '#0d6e6e');
 
-  // Zero line
+  // Y-axis tick labels
   const plotH = height - padding.top - padding.bottom;
+  const yTickCount = 4;
+  context.fillStyle = 'rgba(39, 23, 14, 0.6)';
+  context.font = '10px IBM Plex Mono, monospace';
+  context.textAlign = 'right';
+  for (let i = 0; i <= yTickCount; i += 1) {
+    const frac = i / yTickCount;
+    const val = yRange[1] - frac * (yRange[1] - yRange[0]);
+    const ty = padding.top + frac * plotH;
+    context.fillText(val.toFixed(1), padding.left - 4, ty + 3.5);
+  }
+  context.textAlign = 'left';
+
+  // Zero line
   const zeroY = height - padding.bottom - ((0 - yRange[0]) / (yRange[1] - yRange[0] || 1)) * plotH;
   context.strokeStyle = 'rgba(39, 23, 14, 0.15)';
   context.lineWidth = 1;
