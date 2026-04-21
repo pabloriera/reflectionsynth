@@ -13,10 +13,10 @@ class ReflectonNotebookProcessor extends AudioWorkletProcessor {
       secondSigma: 0.1,
       cutoffMultiplier: 4.0,
       Z: 1.0,
-      alpha: 0.25,
-      Q0: 3.0,
-      qf: -0.1,
-      k: 30.0,
+      k: 0.25,
+      p: 3.0,
+      qc: -0.1,
+      smoothness: 30.0,
       newtonIters: 10,
       outputGain: 0.75,
       active: false,
@@ -95,22 +95,22 @@ class ReflectonNotebookProcessor extends AudioWorkletProcessor {
   }
 
   evaluateF(q) {
-    const { alpha, Q0, qf, k } = this.params;
-    const tanhValue = Math.tanh(k * (q - qf));
+    const { k, p, qc, smoothness } = this.params;
+    const tanhValue = Math.tanh(smoothness * (q - qc));
     const smoothStep = 0.5 * (1 + tanhValue);
-    return alpha * (Q0 - q) * (q - qf) * smoothStep;
+    return k * (p - q) * (q - qc) * smoothStep;
   }
 
   evaluateDF(q) {
-    const { alpha, Q0, qf, k } = this.params;
-    const tanhValue = Math.tanh(k * (q - qf));
+    const { k, p, qc, smoothness } = this.params;
+    const tanhValue = Math.tanh(smoothness * (q - qc));
     const smoothStep = 0.5 * (1 + tanhValue);
-    const dsmoothStep = 0.5 * k * (1 - tanhValue * tanhValue);
+    const dsmoothStep = 0.5 * smoothness * (1 - tanhValue * tanhValue);
 
-    return alpha * (
-      -(q - qf) * smoothStep +
-      (Q0 - q) * smoothStep +
-      (Q0 - q) * (q - qf) * dsmoothStep
+    return k * (
+      -(q - qc) * smoothStep +
+      (p - q) * smoothStep +
+      (p - q) * (q - qc) * dsmoothStep
     );
   }
 

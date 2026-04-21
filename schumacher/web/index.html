@@ -20,10 +20,10 @@
   :root {
     --bg: #f5f6f8;
     --panel: #ffffff;
-    --border: #cfd6df;
-    --border-strong: #96a3b5;
-    --ink: #17202a;
-    --muted: #5f6b7a;
+    --border: #b9c4d2;
+    --border-strong: #60738a;
+    --ink: #0f1720;
+    --muted: #334155;
     --accent: #1f5fbf;
     --wave: #0d6e6e;
     --kernel: #bf5b17;
@@ -59,22 +59,22 @@
 
   .topbar {
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.95fr);
-    gap: 12px;
+    grid-template-columns: minmax(0, 1.45fr) minmax(420px, 1fr);
+    gap: 16px;
     align-items: start;
-    padding: 10px 12px;
+    padding: 14px 16px;
   }
 
   .title-block {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 
   .title-content {
     display: grid;
-    grid-template-columns: minmax(320px, 520px) 340px;
-    gap: 10px;
+    grid-template-columns: minmax(420px, 620px) 420px;
+    gap: 18px;
     align-items: start;
     justify-content: start;
   }
@@ -82,22 +82,22 @@
   .description-block {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    max-width: 520px;
+    gap: 6px;
+    max-width: 620px;
   }
 
   .diagram-card {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    min-height: 210px;
+    min-height: 250px;
   }
 
   .diagram-card img {
     display: block;
-    width: 340px;
+    width: 420px;
     height: auto;
-    max-height: 235px;
+    max-height: 270px;
   }
 
   .eyebrow {
@@ -110,8 +110,8 @@
 
   h1 {
     margin: 0;
-    font-size: 22px;
-    line-height: 1.1;
+    font-size: 34px;
+    line-height: 1.05;
     font-weight: 600;
   }
 
@@ -129,15 +129,15 @@
   .status-subtext,
   .plot-head span {
     margin: 0;
-    /* color: var(--muted); */
-    line-height: 1.35;
-    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.45;
+    font-size: 15px;
   }
 
   .intro {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 8px;
     margin-top: 2px;
   }
 
@@ -148,19 +148,27 @@
   .intro-heading {
     color: var(--ink);
     font-weight: 600;
+    font-size: 17px;
+  }
+
+  .intro mjx-container[display="true"] {
+    margin: 4px 0 0 !important;
+    text-align: left !important;
+    font-size: 120% !important;
   }
 
   .transport {
     display: flex;
-    gap: 8px;
+    gap: 10px;
   }
 
   button {
     border: 1px solid var(--border-strong);
     border-radius: 3px;
-    padding: 7px 12px;
+    padding: 10px 16px;
     font: inherit;
-    font-size: 13px;
+    font-size: 15px;
+    font-weight: 600;
     background: #f7f9fc;
     color: var(--ink);
     cursor: pointer;
@@ -179,33 +187,33 @@
   .stats {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
+    gap: 8px;
   }
 
   .stat-card {
-    padding: 8px 10px;
+    padding: 12px 14px;
     border: 1px solid var(--border);
     border-radius: 3px;
     background: #fbfcfe;
   }
 
   .stat-label {
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.04em;
     color: var(--muted);
-    margin-bottom: 2px;
+    margin-bottom: 4px;
   }
 
   .stat-value {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 13px;
+    font-size: 21px;
   }
 
   .status-box {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 10px;
+    padding: 12px 14px;
     border: 1px solid var(--border);
     border-radius: 3px;
     background: #fbfcfe;
@@ -221,7 +229,7 @@
   .status-copy {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
   }
 
   .stats-block {
@@ -231,12 +239,12 @@
   }
 
   .status-box strong {
-    font-size: 13px;
+    font-size: 21px;
     font-weight: 600;
   }
 
   .controls-panel {
-    padding: 8px;
+    padding: 10px;
   }
 
   .control-sections {
@@ -246,15 +254,15 @@
   }
 
   .control-group {
-    padding: 8px 10px;
+    padding: 10px 12px;
     background: #fbfcfe;
     border: 1px solid var(--border);
     border-radius: 3px;
   }
 
   .control-group h2 {
-    margin: 0 0 8px;
-    font-size: 13px;
+    margin: 0 0 10px;
+    font-size: 15px;
     font-weight: 600;
   }
 
@@ -266,13 +274,13 @@
 
   .slider-row {
     display: grid;
-    grid-template-columns: 72px minmax(0, 1fr) 62px;
+    grid-template-columns: 92px minmax(0, 1fr) 76px;
     gap: 8px;
     align-items: center;
   }
 
   .slider-row label {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--muted);
   }
 
@@ -282,10 +290,10 @@
   }
 
   .slider-value {
-    min-width: 62px;
+    min-width: 76px;
     text-align: right;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 11px;
+    font-size: 13px;
     color: var(--ink);
   }
 
@@ -313,7 +321,7 @@
 
   .plot-head h3 {
     margin: 0;
-    font-size: 12px;
+    font-size: 15px;
   }
 
   canvas {
@@ -363,7 +371,7 @@
     }
 
     .diagram-card img {
-      max-height: 220px;
+      max-height: 240px;
       width: auto;
       max-width: 100%;
     }

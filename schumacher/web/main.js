@@ -6,10 +6,10 @@ const DEFAULTS = {
   secondSigma: 0.1,
   cutoffMultiplier: 4.0,
   Z: 1.0,
-  alpha: 0.25,
-  Q0: 3.0,
-  qf: -0.1,
-  k: 30.0,
+  k: 0.25,
+  p: 3.0,
+  qc: -0.1,
+  smoothness: 30.0,
   newtonIters: 10,
   outputGain: 0.75,
   active: false,
@@ -81,36 +81,28 @@ const CONTROL_GROUPS = [
     title: 'F(q)',
     controls: [
       {
-        id: 'alpha',
-        label: 'alpha',
+        id: 'k',
+        label: 'k',
         min: 0.01,
         max: 2,
         step: 0.01,
         format: (value) => value.toFixed(2),
       },
       {
-        id: 'Q0',
-        label: 'Q0',
+        id: 'p',
+        label: 'p',
         min: -2,
         max: 8,
         step: 0.01,
         format: (value) => value.toFixed(2),
       },
       {
-        id: 'qf',
-        label: 'qf',
+        id: 'qc',
+        label: 'qc',
         min: -2,
         max: 2,
         step: 0.01,
         format: (value) => value.toFixed(2),
-      },
-      {
-        id: 'k',
-        label: 'k',
-        min: 1,
-        max: 80,
-        step: 0.5,
-        format: (value) => value.toFixed(1),
       },
     ],
   },
@@ -172,8 +164,8 @@ function tanh(value) {
 }
 
 function evaluateF(q, params = state) {
-  const smoothStep = 0.5 * (1 + tanh(params.k * (q - params.qf)));
-  return params.alpha * (params.Q0 - q) * (q - params.qf) * smoothStep;
+  const smoothStep = 0.5 * (1 + tanh(params.smoothness * (q - params.qc)));
+  return params.k * (params.p - q) * (q - params.qc) * smoothStep;
 }
 
 function computeReflectionKernel(sampleRate = runtime.sampleRate, params = state) {
@@ -454,8 +446,8 @@ function drawReflection() {
 }
 
 function computeTransferRange() {
-  const span = Math.max(1.5, Math.abs(state.Q0 - state.qf) * 1.35);
-  const center = (state.Q0 + state.qf) * 0.5;
+  const span = Math.max(1.5, Math.abs(state.p - state.qc) * 1.35);
+  const center = (state.p + state.qc) * 0.5;
   return [center - span, center + span];
 }
 
