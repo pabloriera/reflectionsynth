@@ -461,24 +461,18 @@ function drawReflection() {
   const dtMs = 1000 / sr;
   const { sigma, beta, T } = state;
 
-  // Render the causal exponential: r(t) = beta * exp(-sigma*(t-T)) for t >= T
-  const displayEnd = T + (sigma > 0 ? Math.min(8 / sigma, 100) : 20);
+  // Render the causal exponential: r(t) = -beta * exp(-sigma*(t-T)) for t >= T
+  // Fixed axes: y always covers full beta range, x always shows 3×T window
+  const displayEnd = T * 3;
+  const yRange = [-31, 1];
   const steps = 512;
   const points = [];
-  let minR = Infinity;
-  let maxR = -Infinity;
 
   for (let i = 0; i < steps; i += 1) {
     const t = (displayEnd * i) / (steps - 1);
     const r = t >= T ? -beta * Math.exp(-sigma * (t - T)) : 0;
     points.push([t, r]);
-    minR = Math.min(minR, r);
-    maxR = Math.max(maxR, r);
   }
-
-  if (Math.abs(maxR - minR) < 1e-6) { maxR += 1; minR -= 1; }
-  const yPad = 0.08 * (maxR - minR);
-  const yRange = [minR - yPad, maxR + yPad];
 
   context.clearRect(0, 0, width, height);
   drawGrid(context, width, height, padding, 6, 4);
@@ -541,7 +535,9 @@ function computeTransferRange() {
 function drawTransfer() {
   const { context, width, height } = getContext2d(elements.transferCanvas);
   const padding = { left: 44, right: 18, top: 18, bottom: 28 };
-  const [minP, maxP] = computeTransferRange();
+  // Fixed x range covering full slider extents of pf (-5) and P0 (10)
+  const xRange = [-5, 10];
+  const [minP, maxP] = xRange;
   const steps = 256;
   const points = [];
   let minF = Infinity;
