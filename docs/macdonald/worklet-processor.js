@@ -7,7 +7,6 @@ class MacdonaldProcessor extends AudioWorkletProcessor {
     this.params = {
       tau: 0.9,
       beta: -2.1,
-      gamma: 1.0,
       meanDelay: 4.0,
       p: 3,
       xHistory: 0.2,
@@ -51,7 +50,6 @@ class MacdonaldProcessor extends AudioWorkletProcessor {
     Object.assign(this.params, overrides);
     this.params.tau = Math.max(0.01, Number(this.params.tau));
     this.params.beta = Number(this.params.beta);
-    this.params.gamma = Number(this.params.gamma);
     this.params.meanDelay = Math.max(0.05, Number(this.params.meanDelay));
     this.params.p = Math.max(0, Math.min(32, Math.round(Number(this.params.p))));
     this.params.xHistory = Number(this.params.xHistory);
@@ -115,7 +113,7 @@ class MacdonaldProcessor extends AudioWorkletProcessor {
     const x = state[0];
     const z = state[state.length - 1];
 
-    out[0] = (this.params.beta * Math.tanh(this.params.gamma * z) - x) / this.params.tau;
+    out[0] = (Math.tanh(this.params.beta * z) - x) / this.params.tau;
     out[1] = this.a * (x - state[1]);
 
     for (let index = 2; index < state.length; index += 1) {

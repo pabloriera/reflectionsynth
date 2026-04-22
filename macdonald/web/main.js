@@ -1,11 +1,10 @@
 const DEFAULTS = {
   tau: 0.9,
-  beta: -2.1,
-  gamma: 1.0,
-  meanDelay: 4.0,
+  beta: -5,
+  meanDelay: 1.0,
   p: 3,
   xHistory: 0.2,
-  gain: 0.25,
+  gain: 0.1,
   substeps: 4,
   method: 'rk4',
   active: false,
@@ -29,15 +28,6 @@ const CONTROL_GROUPS = [
         label: 'β',
         ariaLabel: 'beta',
         min: -8,
-        max: 8,
-        step: 0.01,
-        format: (v) => v.toFixed(2),
-      },
-      {
-        id: 'gamma',
-        label: 'γ',
-        ariaLabel: 'gamma',
-        min: 0,
         max: 8,
         step: 0.01,
         format: (v) => v.toFixed(2),
@@ -254,7 +244,6 @@ function postParams() {
       p: Math.round(state.p),
       tau: state.tau,
       beta: state.beta,
-      gamma: state.gamma,
       meanDelay: state.meanDelay,
       xHistory: state.xHistory,
       method: state.method,
@@ -271,7 +260,7 @@ async function ensureAudio() {
 
   runtime.audioContext = new AudioContext({ latencyHint: 'interactive' });
   runtime.sampleRate = runtime.audioContext.sampleRate;
-  await runtime.audioContext.audioWorklet.addModule('./worklet-processor.js?v=20260421-taugamma');
+  await runtime.audioContext.audioWorklet.addModule('./worklet-processor.js?v=20260421-tanhbeta');
 
   runtime.node = new AudioWorkletNode(runtime.audioContext, 'macdonald-processor', {
     numberOfOutputs: 1,
