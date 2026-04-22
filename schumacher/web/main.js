@@ -7,6 +7,7 @@ const DEFAULTS = {
   cutoffMultiplier: 4.0,
   Z: 1.0,
   k: 0.25,
+  gain: 0.25,
   p: 3.0,
   qc: -0.1,
   smoothness: 30.0,
@@ -111,6 +112,7 @@ const state = { ...DEFAULTS };
 const runtime = {
   audioContext: null,
   node: null,
+  gainNode: null,
   sampleRate: 48000,
   latestScope: new Float32Array(512),
   latestQ: 0,
@@ -123,6 +125,8 @@ const elements = {
   controlsRoot: document.getElementById('controlsRoot'),
   toggleAudio: document.getElementById('toggleAudio'),
   resetSolver: document.getElementById('resetSolver'),
+  gainSlider: document.getElementById('gainSlider'),
+  gainValue: document.getElementById('gainValue'),
   sampleRateValue: document.getElementById('sampleRateValue'),
   kernelLengthValue: document.getElementById('kernelLengthValue'),
   currentQValue: document.getElementById('currentQValue'),
@@ -222,6 +226,16 @@ function renderControls() {
   }
 }
 
+function applyOutputGain() {
+  if (runtime.gainNode && runtime.audioContext) {
+    const now = runtime.audioContext.currentTime;
+    runtime.gainNode.gain.cancelScheduledValues(now);
+    runtime.gainNode.gain.setValueAtTime(runtime.gainNode.gain.value, now);
+    runtime.gainNode.gain.linearRampToValueAtTime(state.gain, now + 0.01);
+    runtime.gainNode.gain.value = state.gain;
+  }
+}
+
 function updateUi() {
   for (const group of CONTROL_GROUPS) {
     for (const control of group.controls) {
@@ -233,9 +247,11 @@ function updateUi() {
     }
   }
 
+  elements.gainSlider.value = String(state.gain);
+  elements.gainValue.textContent = state.gain.toFixed(3);
   elements.sampleRateValue.textContent = runtime.audioContext
-    ? `${runtime.audioContext.sampleRate} Hz`
-    : 'pending';
+    ? `fs ${runtime.audioContext.sampleRate} Hz`
+    : 'fs pending';
 
   const kernel = computeReflectionKernel(runtime.audioContext?.sampleRate ?? runtime.sampleRate, state);
   elements.kernelLengthValue.textContent = `${kernel.length} taps`;
@@ -279,7 +295,11 @@ async function ensureAudio() {
     outputChannelCount: [1],
   });
 
-  runtime.node.connect(runtime.audioContext.destination);
+  runtime.gainNode = runtime.audioContext.createGain();
+  applyOutputGain();
+
+  runtime.node.connect(runtime.gainNode);
+  runtime.gainNode.connect(runtime.audioContext.destination);
   runtime.node.port.onmessage = (event) => {
     const message = event.data;
     if (message.type === 'unstable') {
@@ -301,7 +321,7 @@ async function ensureAudio() {
     updateUi();
   };
 
-  elements.sampleRateValue.textContent = `${runtime.audioContext.sampleRate} Hz`;
+  elements.sampleRateValue.textContent = `fs ${runtime.audioContext.sampleRate} Hz`;
   postParams();
 }
 
@@ -511,10 +531,17 @@ elements.toggleAudio.addEventListener('click', async () => {
 
   if (state.active) {
     await runtime.audioContext.resume();
+    applyOutputGain();
     resetSolver();
   }
 
   postParams();
+  updateUi();
+});
+
+elements.gainSlider.addEventListener('input', (event) => {
+  state.gain = Number(event.target.value);
+  applyOutputGain();
   updateUi();
 });
 

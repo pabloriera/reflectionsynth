@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Barjau et al. 1997 – DDE Reed Model</title>
+<title>MacDonald 1978 - Distributed Delay Synth</title>
 <script>
   window.MathJax = {
     tex: {
@@ -25,14 +25,18 @@
     --accent: #1f5fbf;
     --wave: #0d6e6e;
     --kernel: #bf5b17;
-    --transfer: #6b57b8;
+    --phase: #6b57b8;
   }
 
   * { box-sizing: border-box; }
 
+  html,
+  body {
+    height: 100%;
+  }
+
   body {
     margin: 0;
-    height: 100vh;
     overflow: hidden;
     font-family: "Segoe UI", Arial, sans-serif;
     color: var(--ink);
@@ -41,59 +45,32 @@
 
   .shell {
     display: grid;
-    grid-template-rows: auto auto 1fr auto;
-    gap: 10px;
-    height: 100vh;
-    padding: 10px;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 8px;
+    height: 100dvh;
+    padding: 8px;
+    overflow: hidden;
   }
 
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 4px;
+    min-height: 0;
   }
 
   .topbar {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(380px, 1fr);
-    gap: 16px;
+    grid-template-columns: minmax(0, 1.5fr) minmax(360px, 0.95fr);
+    gap: 12px;
     align-items: start;
-    padding: 14px 16px;
+    padding: 10px 12px;
   }
 
   .title-block {
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-
-  .title-content {
-    display: grid;
-    grid-template-columns: minmax(360px, 620px) 380px;
-    gap: 18px;
-    align-items: start;
-    justify-content: start;
-  }
-
-  .description-block {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-width: 620px;
-  }
-
-  .diagram-card {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 200px;
-  }
-
-  .diagram-card img {
-    display: block;
-    width: 500px;
-    height: auto;
-    max-height: 260px;
   }
 
   .eyebrow {
@@ -106,52 +83,114 @@
 
   h1 {
     margin: 0;
-    font-size: 30px;
+    font-size: 26px;
     line-height: 1.05;
     font-weight: 600;
   }
 
-  h1 a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  h1 a:hover { text-decoration: underline; }
-
   .intro {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     margin-top: 2px;
   }
 
-  .intro p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 14px; }
-
-  .intro-heading { color: var(--ink); font-weight: 600; font-size: 16px; }
-
-  .intro mjx-container[display="true"] {
-    margin: 3px 0 0 !important;
-    text-align: left !important;
-    font-size: 110% !important;
+  .intro p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.3;
+    font-size: 13px;
   }
 
-  .transport { display: flex; gap: 10px; align-items: center; }
+  .intro-heading {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 15px;
+  }
 
-  .substeps-control {
+  .intro mjx-container[display="true"] {
+    margin: 1px 0 0 !important;
+    text-align: left !important;
+    font-size: 92% !important;
+  }
+
+  .stats-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .status-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: #fbfcfe;
+  }
+
+  .status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .status-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .status-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .status-inline-meta {
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+
+  .status-box strong {
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .status-subtext {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .transport {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .transport-control {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
   }
 
-  .substeps-control label {
+  .transport-control label {
     font-size: 11px;
     color: var(--muted);
     letter-spacing: 0.04em;
   }
 
-  .substeps-control input[type="number"] {
-    width: 52px;
+  .transport-control input,
+  .transport-control select {
+    min-width: 70px;
     padding: 5px 6px;
     border: 1px solid var(--border-strong);
     border-radius: 3px;
@@ -165,9 +204,9 @@
   button {
     border: 1px solid var(--border-strong);
     border-radius: 3px;
-    padding: 10px 16px;
+    padding: 8px 12px;
     font: inherit;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     background: #f7f9fc;
     color: var(--ink);
@@ -184,7 +223,7 @@
   }
 
   .stat-card {
-    padding: 12px 14px;
+    padding: 9px 12px;
     border: 1px solid var(--border);
     border-radius: 3px;
     background: #fbfcfe;
@@ -199,7 +238,7 @@
 
   .stat-value {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 21px;
+    font-size: 18px;
   }
 
   .gain-card {
@@ -226,73 +265,49 @@
     font-size: 13px;
   }
 
-  .status-box {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    background: #fbfcfe;
-  }
-
-  .status-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .status-copy { display: flex; flex-direction: column; gap: 4px; }
-
-  .status-line {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .status-inline-meta {
-    color: var(--muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 13px;
-  }
-
-  .stats-block { display: flex; flex-direction: column; gap: 6px; }
-
-  .status-box strong { font-size: 21px; font-weight: 600; }
-
-  .status-subtext { margin: 0; color: var(--muted); font-size: 15px; }
-
-  .controls-panel { padding: 10px; }
+  .controls-panel { padding: 8px; }
 
   .control-sections {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
   .control-group {
-    padding: 10px 12px;
+    padding: 8px 10px;
     background: #fbfcfe;
     border: 1px solid var(--border);
     border-radius: 3px;
   }
 
-  .control-group h2 { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
+  .control-group h2 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
 
-  .control-stack { display: flex; flex-direction: column; gap: 8px; }
+  .control-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 
   .slider-row {
     display: grid;
-    grid-template-columns: 80px minmax(0, 1fr) 16px 80px;
+    grid-template-columns: 88px minmax(0, 1fr) 16px 84px;
     gap: 8px;
     align-items: center;
   }
 
-  .slider-row label { font-size: 14px; color: var(--muted); }
+  .slider-row label {
+    font-size: 13px;
+    color: var(--muted);
+  }
 
-  .slider-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .slider-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
 
   .zero-btn {
     width: 14px;
@@ -312,7 +327,7 @@
   .zero-btn:hover { background: var(--accent); border-color: var(--accent); }
 
   .slider-value {
-    min-width: 80px;
+    min-width: 84px;
     text-align: right;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 13px;
@@ -321,23 +336,23 @@
 
   .plot-grid {
     display: grid;
-    grid-template-columns: 1.25fr 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 8px;
     min-height: 0;
   }
 
   .plot-stack {
     display: grid;
     grid-template-rows: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
     min-height: 0;
   }
 
   .plot-card {
-    padding: 8px;
+    padding: 6px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     min-height: 0;
   }
 
@@ -348,9 +363,21 @@
     align-items: baseline;
   }
 
-  .plot-head h3 { margin: 0; font-size: 15px; }
+  .plot-head h3 {
+    margin: 0;
+    font-size: 14px;
+  }
 
-  .plot-head span { margin: 0; color: var(--muted); font-size: 13px; }
+  .plot-head span {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .plot-body {
+    flex: 1;
+    min-height: 0;
+  }
 
   canvas {
     width: 100%;
@@ -361,45 +388,44 @@
     border: 1px solid var(--border);
   }
 
-  .plot-body { flex: 1; min-height: 0; }
-
-  .footnote { padding: 0 2px; color: var(--muted); font-size: 14px; }
+  .footnote {
+    padding: 0 2px 4px;
+    color: var(--muted);
+    font-size: 12px;
+  }
 
   @media (max-width: 1200px) {
     .plot-grid { grid-template-columns: 1fr; }
     .control-sections { grid-template-columns: 1fr; }
-    body { height: auto; overflow: auto; }
-    .shell { height: auto; }
   }
 
   @media (max-width: 980px) {
     .topbar { grid-template-columns: 1fr; }
-    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .status-header { flex-direction: column; align-items: stretch; }
+    .transport { justify-content: flex-start; }
   }
-</style>
+ </style>
 </head>
 <body>
   <div class="shell">
     <header class="topbar panel">
       <div class="title-block">
-        <div class="title-content">
-          <div class="description-block">
-            <h1><a href="barjau1997.pdf" target="_blank" rel="noreferrer">Barjau, Agulló &amp; Cardona 1997 (PDF)</a></h1>
-            <div class="intro">
-              <p class="intro-heading">Model definition</p>
-              <p>
-                Two coupled DDEs for pressure $p(t)$ and reed velocity $u(t)$
-                with discrete delay $T$ and polynomial nonlinearity $f_{nl}$.
-              </p>
-              <p>$$\frac{du}{dt} = \frac{f_{nl}(p) - u}{\tau}$$</p>
-              <p>$$\frac{dp}{dt} = \frac{Z_0}{S}\!\left[\frac{f_{nl}(p)-u}{\tau} + \sigma\, u(t) - \beta\, u(t-T)\right] - \sigma\, p(t) - \beta\, p(t-T)$$</p>
-              <p>$$f_{nl}(p) = \alpha\,(P_0 - p)\,(p - p_f)$$</p>
-            </div>
-          </div>
-          <div class="diagram-card">
-            <img src="./dgm.svg" alt="Model block diagram">
-          </div>
+        <div class="eyebrow">Delay-Based Synth Collection</div>
+        <h1>MacDonald 1978 - Distributed Delay via Linear Chain</h1>
+        <div class="intro">
+          <p class="intro-heading">Model definition</p>
+          <p>
+            The delay variable uses the Erlang kernel from equation (7), then the
+            distributed delay is replaced by a finite chain of ODEs for realtime audio.
+          </p>
+          <p>$$G_a^p(u) = \frac{a^{p+1} u^p}{p!}e^{-au}$$</p>
+          <p>$$\bar{\tau} = \int_0^{\infty} u\,G_a^p(u)\,du = \frac{p+1}{a}, \qquad a = \frac{p+1}{\bar{\tau}}$$</p>
+          <p>$$\dot{x}(t) = \frac{\beta\tanh(\gamma z(t)) - x(t)}{\tau}, \qquad z(t) = y_p(t)$$</p>
+          <p>$$\dot{y}_0 = a(x-y_0), \qquad \dot{y}_j = a(y_{j-1}-y_j), \; j=1,\dots,p$$</p>
+          <p>
+            Audio is the current state $x(t)$, integrated sample-by-sample with a selectable
+            explicit Euler or RK4 solver.
+          </p>
         </div>
       </div>
 
@@ -414,15 +440,23 @@
               <div class="status-subtext" id="statusSubtext">Press Start Audio to begin.</div>
             </div>
             <div class="transport">
-              <div class="substeps-control">
+              <div class="transport-control">
+                <label for="methodSelect">integrator</label>
+                <select id="methodSelect">
+                  <option value="euler">Euler</option>
+                  <option value="rk4" selected>RK4</option>
+                </select>
+              </div>
+              <div class="transport-control">
                 <label for="substepsInput">sub-steps</label>
-                <input type="number" id="substepsInput" min="1" max="64" step="1" value="8">
+                <input type="number" id="substepsInput" min="1" max="64" step="1" value="4">
               </div>
               <button class="primary" id="toggleAudio">Start Audio</button>
               <button class="secondary" id="resetSolver">Reset State</button>
             </div>
           </div>
         </div>
+
         <div class="stats">
           <div class="stat-card gain-card">
             <div class="stat-label">gain</div>
@@ -432,16 +466,16 @@
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">delay M</div>
-            <div class="stat-value" id="delayMValue">pending</div>
+            <div class="stat-label">a</div>
+            <div class="stat-value" id="aValue">pending</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">p</div>
-            <div class="stat-value" id="currentPValue">0.0000</div>
+            <div class="stat-label">x</div>
+            <div class="stat-value" id="currentXValue">0.0000</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">ƒ(p)</div>
-            <div class="stat-value" id="currentFnlValue">0.0000</div>
+            <div class="stat-label">z = y_p</div>
+            <div class="stat-value" id="currentZValue">0.0000</div>
           </div>
         </div>
       </div>
@@ -454,7 +488,7 @@
     <section class="plot-grid">
       <article class="plot-card panel">
         <div class="plot-head">
-          <h3>Waveform p(t)</h3>
+          <h3>Waveform x(t)</h3>
           <span id="waveformMeta">Scope waiting for data</span>
         </div>
         <div class="plot-body">
@@ -465,7 +499,7 @@
       <article class="plot-card panel">
         <div class="plot-head">
           <h3>Phase portrait</h3>
-          <span id="phaseMeta">u vs p</span>
+          <span id="phaseMeta">z versus x</span>
         </div>
         <div class="plot-body">
           <canvas id="phaseCanvas"></canvas>
@@ -475,29 +509,31 @@
       <div class="plot-stack">
         <article class="plot-card panel">
           <div class="plot-head">
-            <h3>Reflection r(t)</h3>
-            <span id="reflectionMeta">β·e^(−σ(t−T))</span>
+            <h3>Kernel G(u)</h3>
+            <span id="kernelMeta">Equation (7)</span>
           </div>
           <div class="plot-body">
-            <canvas id="reflectionCanvas"></canvas>
+            <canvas id="kernelCanvas"></canvas>
           </div>
         </article>
 
         <article class="plot-card panel">
           <div class="plot-head">
-            <h3>Transfer ƒ(p)</h3>
-            <span id="transferMeta">Current state marker</span>
+            <h3>Chain state</h3>
+            <span id="chainMeta">y_0 ... y_p</span>
           </div>
           <div class="plot-body">
-            <canvas id="transferCanvas"></canvas>
+            <canvas id="chainCanvas"></canvas>
           </div>
         </article>
       </div>
     </section>
 
-    <div class="footnote">Serve this folder over HTTP so the AudioWorklet can load.</div>
+    <div class="footnote">
+      Serve this folder over HTTP so the AudioWorklet can load.
+    </div>
   </div>
 
-  <script type="module" src="./main.js"></script>
+  <script type="module" src="./main.js?v=20260421-gainfix"></script>
 </body>
 </html>
