@@ -29,7 +29,7 @@ const CONTROL_GROUPS = [
         min: 0.05,
         max: 8,
         step: 0.01,
-        format: (v) => v.toFixed(2),
+        format: (v) => `${v.toFixed(2)} ms`,
       },
       {
         id: 'beta1',
@@ -53,8 +53,8 @@ const CONTROL_GROUPS = [
         id: 'meanDelay1',
         label: 'τ̄₁',
         ariaLabel: 'mean delay one',
-        min: 0.25,
-        max: 40,
+        min: 0.05,
+        max: 10,
         step: 0.01,
         format: (v) => `${v.toFixed(2)} ms`,
       },
@@ -62,8 +62,8 @@ const CONTROL_GROUPS = [
         id: 'meanDelay2',
         label: 'τ̄₂',
         ariaLabel: 'mean delay two',
-        min: 0.25,
-        max: 40,
+        min: 0.05,
+        max: 10,
         step: 0.01,
         format: (v) => `${v.toFixed(2)} ms`,
       },
@@ -95,7 +95,7 @@ const CONTROL_GROUPS = [
         type: 'select',
         options: [
           { value: 'tanh', label: 'tanh' },
-          { value: 'barjau', label: 'barjau' },
+          { value: 'reed', label: 'reed' },
         ],
       },
       {
@@ -113,8 +113,8 @@ const CONTROL_GROUPS = [
         ariaLabel: 'alpha',
         min: 0.1,
         max: 30,
-        step: 0.1,
-        format: (v) => v.toFixed(1),
+        step: 0.05,
+        format: (v) => v.toFixed(2),
       },
       {
         id: 'P0',
@@ -122,8 +122,8 @@ const CONTROL_GROUPS = [
         ariaLabel: 'P zero',
         min: -5,
         max: 10,
-        step: 0.1,
-        format: (v) => v.toFixed(1),
+        step: 0.02,
+        format: (v) => v.toFixed(2),
       },
       {
         id: 'pf',
@@ -131,8 +131,8 @@ const CONTROL_GROUPS = [
         ariaLabel: 'pf',
         min: -5,
         max: 5,
-        step: 0.1,
-        format: (v) => v.toFixed(1),
+        step: 0.02,
+        format: (v) => v.toFixed(2),
       },
       {
         id: 'smoothness',
@@ -211,7 +211,7 @@ function evaluateKernel(u, meanDelay, params = state) {
 }
 
 function evaluateFnl(z, params = state) {
-  if (params.fnlType === 'barjau') {
+  if (params.fnlType === 'reed') {
     const smoothStep = 0.5 * (1.0 + Math.tanh(params.smoothness * (z - params.pf)));
     return params.alpha * (params.P0 - z) * (z - params.pf) * smoothStep;
   }
@@ -220,19 +220,19 @@ function evaluateFnl(z, params = state) {
 }
 
 function getFnlLabel(fnlType = state.fnlType) {
-  if (fnlType === 'barjau') {
-    return 'Barjau';
+  if (fnlType === 'reed') {
+    return 'Reed';
   }
   return 'tanh(βz)';
 }
 
 function isControlVisible(controlId, fnlType = state.fnlType) {
   if (controlId === 'beta') {
-    return fnlType !== 'barjau';
+    return fnlType !== 'reed';
   }
 
   if (['alpha', 'P0', 'pf', 'smoothness'].includes(controlId)) {
-    return fnlType === 'barjau';
+    return fnlType === 'reed';
   }
 
   return true;

@@ -63,7 +63,7 @@ class RieraEguiaProcessor extends AudioWorkletProcessor {
     this.params.beta1 = Number(this.params.beta1);
     this.params.beta2 = Number(this.params.beta2);
     this.params.beta = Number(this.params.beta);
-    this.params.fnlType = ['tanh', 'barjau'].includes(this.params.fnlType)
+    this.params.fnlType = ['tanh', 'reed'].includes(this.params.fnlType)
       ? this.params.fnlType
       : 'tanh';
     this.params.alpha = Number(this.params.alpha);
@@ -146,7 +146,7 @@ class RieraEguiaProcessor extends AudioWorkletProcessor {
   }
 
   fnl(z) {
-    if (this.params.fnlType === 'barjau') {
+    if (this.params.fnlType === 'reed') {
       const { alpha, P0, pf, smoothness } = this.params;
       const smoothStep = 0.5 * (1.0 + Math.tanh(smoothness * (z - pf)));
       return alpha * (P0 - z) * (z - pf) * smoothStep;
